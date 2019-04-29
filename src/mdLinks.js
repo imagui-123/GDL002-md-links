@@ -1,7 +1,7 @@
 const path = require('path');
 const fs = require('fs');
-// md = require('markdown-it')(),
-// chalk = require('chalk');
+const Marked = require('marked');
+const fetch = require('node-fetch');
 
 //   Validar que sea un archivo '.md'
 function validateMd(newPath) {
@@ -26,18 +26,6 @@ function absoluteOrRelativePath(newPath) {
   if (path.isAbsolute(newPath) === true)
     return newPath;
 }
-
-//     resultReadFile: function(data){
-//     resultReadFile.then(
-//     (data)=> { // On Success
-//      console.log("resultado =");
-//     urlify(data).forEach(link => console.log(link));
-//     console.log(urlify);
-//    },
-//    (err)=> { // On Error
-//        console.error(err);
-//    })
-//  }
 
 // function pathExist (newPath){
 //    if (fs.exists(newPath)){
@@ -66,49 +54,153 @@ function fileOrDirectory(newPath) {
       if (stats.isFile()) {
         console.log('es archivo');
         resolve(stats.isFile());
-        readCompletePath(newPath);
+        // readCompletePath(newPath);
       }
     });
   });
 }
 
-function readCompletePath(newPath) {
-  const filePath = newPath;
-  return new Promise((resolve, reject) => {
+// esta funcion no nos sirve
+// function extraerLinea(newPath) {
+//   // return new Promise((resolve, reject)=> {
+//     fs.readFile(newPath, 'utf-8', (err,data)=>{
+//       if(err){
+//         return console.log(err);
+//       }
+//     readCompletePath(newPath, data)
+//     console.log(data + ' ----------------');
+    
+//     let fileLine = data.split('\n');
+//     // console.log('Linea archivo' + lineaArchivo);
+//     let extraeLinea = fileLine.map(elemento => {
+//       console.log('extrae linea '+ extraeLinea);
+//     const lineaNumber = (fileLine.indexOf(elemento) + 1);
+//     return extractLinks(newPath, elemento, lineaNumber);
+//   });
+
+//     extraeLinea = extraeLinea.filter(e => e.lenght !== 0);
+//      console.log('extraelinea ' + extraeLinea);
+//     extraeLinea = extraeLinea.reduce((elemento, elementos) => elemento.concat(elementos));
+//      console.log(extraeLinea);
+//     resolve(extraeLinea);
+//   // });
+//  });
+// };
+
+function readCompletePath(newPath, needValidation=true){
+  fs.readFile(newPath, 'utf-8', (err,data)=>{
+    if(err){
+      return console.log(err);
+    }
+    {
+      console.log('READCOMPLETEPATH');
+      
+      const toString =data.toString();
+      const regExp= /(((https?:\/\/)|(http?:\/\/)|(www\.))[^\s\n)]+)(?=\))/g;
+      // extrae todo lo que hace match regexp con los url
+      let url= toString.match(regExp);
+      let uniqueUrl;
+      
+      console.log(`File name: ${newPath}`);
+      console.log('Total links: '+ ' ' + url.length);
+      uniqueUrl= url.filter((currentItem, itemIndex, currentArray) => currentArray.indexOf(currentItem)===itemIndex); // indexOf() retorna el primer índice en el que se puede encontrar un elemento dado en el array
+      console.log('Total unique Links: ' + " " + uniqueUrl.length + '\n');
+      
+        //console.log(needValidation + ' su valor');
+         validateStats(uniqueUrl, newPath);
+
+    }
+   
+  });
+ 
+}
+
+function extractLinks(newPath) {
+  // let returnUrl;
+  // returnUrl = fs.readFile(newPath, 'utf-8', (err, data) => {
     fs.readFile(newPath, 'utf-8', (err, data) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(data);
-         urlify(data, filePath);
-      }
-    });
-  });
-}
-
-function urlify(data, filePath) {
-
-  const mdLinkRgEx = /\[(.+?)\]\(.+?\)/g;
-  const mdLinkRgEx2 = /\[(.+?)\]\((.+?)\)/;
+         if (err) {
+           reject(err);
+         }
+         {
+           console.log('EXTRACTLINKS');
+           
+        const toString= data.toString();
+        const mdLinkRgEx = /(?:[^[])([^[]*)(?=(\]+\(((https?:\/\/)|(http?:\/\/)|(www\.))))/g;
+        const mdLinkRgEx2 = /(((https?:\/\/)|(http?:\/\/)|(www\.))[^\s\n)]+)(?=\))/g;
   
-  var allLinks = data.match(mdLinkRgEx);
-  var htmlLinks = [];
-  for (var x in allLinks) {
-    var grpdDta = mdLinkRgEx2.exec(allLinks[x]);
-    var linkified = grpdDta[2] + '  --' + grpdDta[1] + ' --' + filePath;
-    htmlLinks.push(linkified);
-  }
-  // console.log(htmlLinks.push(linkified))
-  console.log(htmlLinks);
-  return htmlLinks;
+        const allLinks = toString.match(mdLinkRgEx);
+        const urlArray = toString.match(mdLinkRgEx2);
+  
+        for (let i=0; i< urlArray.length; i++) {
+          fetch(urlArray[i])
+          .then(response => {
+            if (response.status == 200) {
+              console.log(`Text: ${allLinks[i]}\nLink: ${urlArray[i]}\nFile: ${newPath}\nResponse code: ${response.status}\nResponse: ${response.statusText}\n`)
+            } else if (response.status == 404||response.status == 400) {
+              console.log(`ERROR.\nText: ${allLink[i]}\nLink: ${urlArray[i]}\nFile: ${newPath}\nResponse code: ${response.status}\nResponse: ${response.statusText}\n`)
+            }
+          })
+        }
+      }
+   }) 
+    readCompletePath(newPath);
+    //  return  returnUrl; 
+};
+
+function validateStats(uniqueUrl, newPath){
+  let badLinks=0;
+  let goodLinks=0;
+  console.log('VALIDATESTATS');
+  // console.log(uniqueUrl + ' valor de uniqueURL');
+  
+  for(let i=0; i<uniqueUrl.lenght; i++){
+    fetch(uniqueUrl[i])
+        .then(response => {
+          console.log(uniqueUrl.lenght + ' valor lenght');
+          
+          if (response.status == 404||response.status == 400) {
+            badLinks++;
+          }else if (response.status == 200|201) {
+            goodLinks++;
+          }
+          if (goodLinks+badLinks === uniqueUrl.length) {
+            console.log(`File: ${newPath} has:`);
+            console.log(`Total Functional Links: ${goodLinks}\nTotal Broken links: ${badLinks}\n`);
+          }
+        }
+      );
+    }
 }
+
+// function readCompletePath(newPath2) {
+//  return new Promise((resolve, reject) => {
+//    fs.readFile(newPath2, 'utf-8', (err, data) => {
+//      if (err) //{
+//        reject(err);
+//      } else {
+//       // console.log(data);
+//        resolve(data);
+//        extractLinks(data, filePath);
+//       }
+//    });
+//  })
+// };
+
+
+
+
+
 
 module.exports = {
   validateMd,
   absoluteOrRelativePath,
+  fileOrDirectory,
+  
+  // extraerLinea,
   readCompletePath,
-  // urlify,
-  fileOrDirectory
+  extractLinks,
+  validateStats
 };
 
 // function readDirectory(newPath){
