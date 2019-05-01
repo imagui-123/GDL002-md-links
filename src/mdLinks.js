@@ -1,31 +1,95 @@
+const validate = require('./validate');
+const stats = require('./stats');
+const functions = require('./functions');
 const path = require('path');
 const fs = require('fs');
-const Marked = require('marked');
 const fetch = require('node-fetch');
 
-//   Validar que sea un archivo '.md'
-function validateMd(newPath) {
-  if (newPath === undefined) {
-    return console.log('Introduce un directorio');
-  } else {
-    const pathExtencion = path.extname(newPath);
-    if (pathExtencion != '.md') {
-      console.log('No es un archivo .md');
-      return false;
-    } else {
-      console.log('Si es un archivo markdown');
-      return true;
+let newPath = process.argv[2];
+let options = process.argv[3];
+
+
+// validateMd(newPath);
+//   Validar que sea un archivo '.md' functio
+function validateMd(newPath, callback) {
+  let markdownArray=[];
+  let readFiles;
+  readFiles=fs.readdir(newPath,(err, files)=> {
+    if(err){
+      return console.log(err);
+      
     }
-  }
+    files.forEach(file=>{
+      if(path.extname(file)== '.md'){
+        markdownArray.push(file);
+      }
+    });
+    callback(markdownArray);
+  });
+  return readFiles;
 }
 
-//   validar que tipo de ruta es
-function absoluteOrRelativePath(newPath) {
-  if (path.isAbsolute(newPath) === false)
-    return path.resolve(newPath);
-  if (path.isAbsolute(newPath) === true)
-    return newPath;
+function readFileM (newPath){
+  fs.readFile(newPath, 'utf-8', function(err,data) {
+    if (err) {
+      return console.log(err);
+    }
+    {
+      const toString=data.toString();
+      // extrae el texto del link
+      const mdLinkRgEx = /(?:[^[])([^[]*)(?=(\]+\(((https?:\/\/)|(http?:\/\/)|(www\.))))/g;
+      const mdLinkRgEx2 = /(((https?:\/\/)|(http?:\/\/)|(www\.))[^\s\n)]+)(?=\))/g;
+      console.log('------READ FILE M---------');
+      
+      const allLinks = toString.match(mdLinkRgEx);
+      const urlArray = toString.match(mdLinkRgEx2);
+      console.log(`File name: ${newPath}\n`);
+      if (urlArray !=null){
+        for (let i=0; i<urlArray.length; i++) {
+          console.log(`Title: ${allLinks[i]}\n Link:${urlArray[i]}\n fileFound: ${newPath}\n`);
+        }
+      } 
+    }
+  })
 }
+
+//validar el markdown y muestra el contenido de todos los archivos, llama la  funcion validate
+function validateAllLinks (){
+  validateMd('./', (array)=>{
+    array.forEach(fileName =>{
+    validateFile(fileName, function (urls, title, file){
+     validate(urls,title,file);
+     });
+    })
+  })
+}
+
+// muestra solo el contenido del archivo especificado
+function validateLink (fileName){
+  readFileM(fileName, (urls, title, file) =>{
+    validate(urls, title, file);
+  })
+}
+
+
+// muestra el status de cada archivo
+function getStats () {
+  validateMd('./', (array)=> {
+    array.forEach(fileName =>{
+      showStats(fileName);
+    })
+  })
+}
+
+
+function getStatsAndValidate (){
+  validateMd('./', (array)=>{
+    array.forEach(fileName =>{
+      showStats(fileName, true);
+    })
+  })
+}
+
 
 // function pathExist (newPath){
 //    if (fs.exists(newPath)){
@@ -36,89 +100,14 @@ function absoluteOrRelativePath(newPath) {
 //   }
 // }
 
-function fileOrDirectory(newPath) {
-  return new Promise((resolve, reject) => {
-    fs.stat(newPath, (err, stats) => {
-       if (err) {
-         if(err.code==='ENOENT'){
-           resolve(false);
-         
-      }else{
-        reject(err);
-      }
-    }
-      if (stats.isDirectory()) {
-        console.log('directorio');
-        return true;
-      } 
-      if (stats.isFile()) {
-        console.log('es archivo');
-        resolve(stats.isFile());
-        // readCompletePath(newPath);
-      }
-    });
-  });
-}
 
-// esta funcion no nos sirve
-// function extraerLinea(newPath) {
-//   // return new Promise((resolve, reject)=> {
-//     fs.readFile(newPath, 'utf-8', (err,data)=>{
-//       if(err){
-//         return console.log(err);
-//       }
-//     readCompletePath(newPath, data)
-//     console.log(data + ' ----------------');
-    
-//     let fileLine = data.split('\n');
-//     // console.log('Linea archivo' + lineaArchivo);
-//     let extraeLinea = fileLine.map(elemento => {
-//       console.log('extrae linea '+ extraeLinea);
-//     const lineaNumber = (fileLine.indexOf(elemento) + 1);
-//     return extractLinks(newPath, elemento, lineaNumber);
-//   });
 
-//     extraeLinea = extraeLinea.filter(e => e.lenght !== 0);
-//      console.log('extraelinea ' + extraeLinea);
-//     extraeLinea = extraeLinea.reduce((elemento, elementos) => elemento.concat(elementos));
-//      console.log(extraeLinea);
-//     resolve(extraeLinea);
-//   // });
-//  });
-// };
 
-function readCompletePath(newPath, needValidation=true){
-  fs.readFile(newPath, 'utf-8', (err,data)=>{
-    if(err){
-      return console.log(err);
-    }
-    {
-      console.log('READCOMPLETEPATH');
-      
-      const toString =data.toString();
-      const regExp= /(((https?:\/\/)|(http?:\/\/)|(www\.))[^\s\n)]+)(?=\))/g;
-      // extrae todo lo que hace match regexp con los url
-      let url= toString.match(regExp);
-      let uniqueUrl;
-      
-      console.log(`File name: ${newPath}`);
-      console.log('Total links: '+ ' ' + url.length);
-      uniqueUrl= url.filter((currentItem, itemIndex, currentArray) => currentArray.indexOf(currentItem)===itemIndex); // indexOf() retorna el primer índice en el que se puede encontrar un elemento dado en el array
-      console.log('Total unique Links: ' + " " + uniqueUrl.length + '\n');
-      
-        //console.log(needValidation + ' su valor');
-         validateStats(uniqueUrl, newPath);
-
-    }
-   
-  });
- 
-}
 
 function extractLinks(newPath) {
-  // let returnUrl;
+  //  let returnUrl;
   // returnUrl = fs.readFile(newPath, 'utf-8', (err, data) => {
-    fs.readFile(newPath, 'utf-8', (err, data) => {
+     fs.readFile(newPath, 'utf-8', (err, data) => {
          if (err) {
            reject(err);
          }
@@ -144,34 +133,34 @@ function extractLinks(newPath) {
         }
       }
    }) 
-    readCompletePath(newPath);
+  //  showStats(newPath);
     //  return  returnUrl; 
 };
 
-function validateStats(uniqueUrl, newPath){
-  let badLinks=0;
-  let goodLinks=0;
-  console.log('VALIDATESTATS');
-  // console.log(uniqueUrl + ' valor de uniqueURL');
+// function validateStats(uniqueUrl, newPath){
+//   let badLinks=0;
+//   let goodLinks=0;
+//   console.log('VALIDATESTATS');
+//   // console.log(uniqueUrl + ' valor de uniqueURL');
   
-  for(let i=0; i<uniqueUrl.lenght; i++){
-    fetch(uniqueUrl[i])
-        .then(response => {
-          console.log(uniqueUrl.lenght + ' valor lenght');
+//   for(let i=0; i<uniqueUrl.lenght; i++){
+//     fetch(uniqueUrl[i])
+//         .then(response => {
+//           console.log(uniqueUrl.lenght + ' valor lenght');
           
-          if (response.status == 404||response.status == 400) {
-            badLinks++;
-          }else if (response.status == 200|201) {
-            goodLinks++;
-          }
-          if (goodLinks+badLinks === uniqueUrl.length) {
-            console.log(`File: ${newPath} has:`);
-            console.log(`Total Functional Links: ${goodLinks}\nTotal Broken links: ${badLinks}\n`);
-          }
-        }
-      );
-    }
-}
+//           if (response.status == 404||response.status == 400) {
+//             badLinks++;
+//           }else if (response.status == 200|201) {
+//             goodLinks++;
+//           }
+//           if (goodLinks+badLinks === uniqueUrl.length) {
+//             console.log(`File: ${newPath} has:`);
+//             console.log(`Total Functional Links: ${goodLinks}\nTotal Broken links: ${badLinks}\n`);
+//           }
+//         }
+//       );
+//     }
+// }
 
 // function readCompletePath(newPath2) {
 //  return new Promise((resolve, reject) => {
@@ -191,16 +180,22 @@ function validateStats(uniqueUrl, newPath){
 
 
 
-
 module.exports = {
   validateMd,
   absoluteOrRelativePath,
-  fileOrDirectory,
-  
+  // fileOrDirectory,
+  readFileM,
+  validateAllLinks,
+  validateLink,
+  validateStats,
   // extraerLinea,
-  readCompletePath,
+  showStats,
   extractLinks,
-  validateStats
+  validateFile,
+  getStats,
+  getStatsAndValidate
+  // printLinks
+  // validateStats
 };
 
 // function readDirectory(newPath){
