@@ -2,7 +2,8 @@ const mdLinks=require('./mdLinks');
 //  const validate = require('./validate');
   const functions = require('./functions');
   
-  mdLinks.validateMd('prueba2.md');
+  //mdLinks.validateMd('prueba2.md');
+  functions.absoluteOrRelativePath('prueba2.md')
  // mdLinks.readFileM('README.md')
  //  mdLinks.validateAllLinks();
  //mdLinks.validateLink('prueba2.md');

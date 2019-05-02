@@ -11,19 +11,19 @@ function validatePath(newPath){
     } else{
         console.log('Ingresa una ruta');
         return false;
-        
     }
 }
 
 //   validar que tipo de ruta es
 function absoluteOrRelativePath(newPath) {
    absolutePath=newPath;
+  // console.log('entra');
     if (path.isAbsolute(absolutePath) === false){
       // console.log('convertir');
-      // console.log(absolutePath +  ' se convirtio en');
+      //  console.log(absolutePath +  ' se convirtio en');
       return path.resolve(absolutePath);
      } if (path.isAbsolute(absolutePath) === true) {
-      // console.log('absoluito');
+      //  console.log('absoluito' + absolutePath);
       return absolutePath;
   }
 }

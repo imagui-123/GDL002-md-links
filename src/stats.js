@@ -9,8 +9,7 @@ function statsLinks(newPath, needValidation=false){
         return console.log(err);
       }
       {
-        console.log('Show the stats');
-        
+        // console.log('Show the stats');
         const toString =data.toString();
         const regExp= /(((https?:\/\/)|(http?:\/\/)|(www\.))[^\s\n)]+)(?=\))/g;
         // extrae todo lo que hace match regexp con los url
@@ -34,7 +33,7 @@ function statsLinks(newPath, needValidation=false){
   function validateStats(uniqueUrl, newPath){
     let badLinks=0;
     let goodLinks=0;
-    console.log('VALIDATE and STATS');
+    // console.log('VALIDATE and STATS');
     for(let i=0; i<uniqueUrl.length; i++){
       // console.log('Este es el valor de uniqueURL '+ uniqueUrl ); 
       fetch(uniqueUrl[i])
