@@ -1,153 +1,135 @@
 const validate = require('./validate');
 const stats = require('./stats');
 const functions = require('./functions');
-const path = require('path');
+let path = require('path');
 const fs = require('fs');
 const fetch = require('node-fetch');
 
 let newPath = process.argv[2];
-let options = process.argv[3];
+// let options = process.argv[3];
 
+function mdLinks(newPath) {
+  if (newPath === undefined) {
+    return console.log('Ingresa una ruta o un directorio');;
+  }
+  functions.absoluteOrRelativePath(newPath);
+  // console.log(newPath + ' valor absoluto');
+  mdTrue = functions.fileValidateMd(newPath);
+  if (mdTrue == true) {
+    readFileM(newPath);
+    return newPath;
+  }
+};
 
-// validateMd(newPath);
-//   Validar que sea un archivo '.md' functio
 function validateMd(newPath, callback) {
-  let markdownArray=[];
+  let markdownArray = [];
   let readFiles;
-  readFiles=fs.readdir(newPath,(err, files)=> {
-    if(err){
+  readFiles = fs.readdir(newPath, (err, files) => {
+
+    if (err) {
+      console.log('Algo anda mal');
       return console.log(err);
-      
+    } else {
+      files.forEach(file => {
+        if (path.extname(file) == '.md') {
+          markdownArray.push(file);
+        }
+      })
     }
-    files.forEach(file=>{
-      if(path.extname(file)== '.md'){
-        markdownArray.push(file);
-      }
-    });
     callback(markdownArray);
-  });
+  })
   return readFiles;
 }
 
-function readFileM (newPath){
-  fs.readFile(newPath, 'utf-8', function(err,data) {
+//   Validar que sea un archivo '.md' functio
+
+function readFileM(newPath) {
+  fs.readFile(newPath, 'utf-8', function(err, data) {
     if (err) {
+      console.log('tenemos un error en readfilem');
       return console.log(err);
     }
-    {
-      const toString=data.toString();
+     {
+      console.log('------READ FILE M---------');
+      const toString = data.toString();
       // extrae el texto del link
       const mdLinkRgEx = /(?:[^[])([^[]*)(?=(\]+\(((https?:\/\/)|(http?:\/\/)|(www\.))))/g;
       const mdLinkRgEx2 = /(((https?:\/\/)|(http?:\/\/)|(www\.))[^\s\n)]+)(?=\))/g;
-      console.log('------READ FILE M---------');
-      
+
       const allLinks = toString.match(mdLinkRgEx);
       const urlArray = toString.match(mdLinkRgEx2);
       console.log(`File name: ${newPath}\n`);
-      if (urlArray !=null){
-        for (let i=0; i<urlArray.length; i++) {
+      if (urlArray != null) {
+        for (let i = 0; i < urlArray.length; i++) {
           console.log(`Title: ${allLinks[i]}\n Link:${urlArray[i]}\n fileFound: ${newPath}\n`);
         }
-      } 
+        if (process.argv[3] === '--validate') {
+          //  validate.validateLinks(urlArray);
+          validateAllLinks(urlArray);
+          return urlArray;
+        } else if (process.argv[3] === '--stats') {
+          //  stats.statsLinks(urlArray);
+          getStats(urlArray);
+          return urlArray;
+        } else if (process.argv[3] === '--validate--stats') {
+          //  stats.validateStats(urlArray);
+          getStatsAndValidate(urlArray);
+          return urlArray;
+        }
+      }
     }
-  })
+  });
 }
 
 //validar el markdown y muestra el contenido de todos los archivos, llama la  funcion validate
-function validateAllLinks (){
-  validateMd('./', (array)=>{
-    array.forEach(fileName =>{
-    validateFile(fileName, function (urls, title, file){
-     validate(urls,title,file);
-     });
-    })
-  })
+function validateAllLinks() {
+  validateMd('./', array => {
+    array.forEach(fileName => {
+      validate.validateLinks(fileName, function(urls, text, file) {
+        validate.validateStatus(urls, text, file);
+      });
+    });
+  });
 }
 
 // muestra solo el contenido del archivo especificado
-function validateLink (fileName){
-  readFileM(fileName, (urls, title, file) =>{
-    validate(urls, title, file);
-  })
+function validateLink(fileName) {
+  readFileM(fileName, (urls, text, file) => {
+    validate.validateStatus(urls, text, file);
+  });
 }
-
 
 // muestra el status de cada archivo
-function getStats () {
-  validateMd('./', (array)=> {
-    array.forEach(fileName =>{
-      showStats(fileName);
-    })
-  })
+function getStats() {
+  validateMd('./', array => {
+    array.forEach(fileName => {
+      stats.statsLinks(fileName);
+    });
+  });
 }
 
-
-function getStatsAndValidate (){
-  validateMd('./', (array)=>{
-    array.forEach(fileName =>{
-      showStats(fileName, true);
-    })
-  })
+function getStatsAndValidate() {
+  validateMd('./', array => {
+    array.forEach(fileName => {
+      stats.statsLinks(fileName, true);
+    });
+  });
 }
 
+console.log(mdLinks(newPath));
 
-// function pathExist (newPath){
-//    if (fs.exists(newPath)){
-//      console.log('No existe el archivo');
-//     return true;
-//   }else{
-//     return false;
-//   }
-// }
-
-
-
-
-
-function extractLinks(newPath) {
-  //  let returnUrl;
-  // returnUrl = fs.readFile(newPath, 'utf-8', (err, data) => {
-     fs.readFile(newPath, 'utf-8', (err, data) => {
-         if (err) {
-           reject(err);
-         }
-         {
-           console.log('EXTRACTLINKS');
-           
-        const toString= data.toString();
-        const mdLinkRgEx = /(?:[^[])([^[]*)(?=(\]+\(((https?:\/\/)|(http?:\/\/)|(www\.))))/g;
-        const mdLinkRgEx2 = /(((https?:\/\/)|(http?:\/\/)|(www\.))[^\s\n)]+)(?=\))/g;
-  
-        const allLinks = toString.match(mdLinkRgEx);
-        const urlArray = toString.match(mdLinkRgEx2);
-  
-        for (let i=0; i< urlArray.length; i++) {
-          fetch(urlArray[i])
-          .then(response => {
-            if (response.status == 200) {
-              console.log(`Text: ${allLinks[i]}\nLink: ${urlArray[i]}\nFile: ${newPath}\nResponse code: ${response.status}\nResponse: ${response.statusText}\n`)
-            } else if (response.status == 404||response.status == 400) {
-              console.log(`ERROR.\nText: ${allLink[i]}\nLink: ${urlArray[i]}\nFile: ${newPath}\nResponse code: ${response.status}\nResponse: ${response.statusText}\n`)
-            }
-          })
-        }
-      }
-   }) 
-  //  showStats(newPath);
-    //  return  returnUrl; 
-};
 
 // function validateStats(uniqueUrl, newPath){
 //   let badLinks=0;
 //   let goodLinks=0;
 //   console.log('VALIDATESTATS');
 //   // console.log(uniqueUrl + ' valor de uniqueURL');
-  
+
 //   for(let i=0; i<uniqueUrl.lenght; i++){
 //     fetch(uniqueUrl[i])
 //         .then(response => {
 //           console.log(uniqueUrl.lenght + ' valor lenght');
-          
+
 //           if (response.status == 404||response.status == 400) {
 //             badLinks++;
 //           }else if (response.status == 200|201) {
@@ -161,41 +143,15 @@ function extractLinks(newPath) {
 //       );
 //     }
 // }
-
-// function readCompletePath(newPath2) {
-//  return new Promise((resolve, reject) => {
-//    fs.readFile(newPath2, 'utf-8', (err, data) => {
-//      if (err) //{
-//        reject(err);
-//      } else {
-//       // console.log(data);
-//        resolve(data);
-//        extractLinks(data, filePath);
-//       }
-//    });
-//  })
-// };
-
-
-
-
-
+// validateMd(newPath);
 module.exports = {
-  validateMd,
-  absoluteOrRelativePath,
-  // fileOrDirectory,
+  mdLinks,
   readFileM,
+  validateMd,
   validateAllLinks,
   validateLink,
-  validateStats,
-  // extraerLinea,
-  showStats,
-  extractLinks,
-  validateFile,
   getStats,
-  getStatsAndValidate
-  // printLinks
-  // validateStats
+  getStatsAndValidate,
 };
 
 // function readDirectory(newPath){
@@ -239,59 +195,3 @@ module.exports = {
 //    console.log("isFile ? " + stats.isFile());
 //    console.log("isDirectory ? " + stats.isDirectory());
 // });
-
-// module.exports = {
-//   validateMd,
-//   absolutesPath,
-//   readCompletePath,
-// };
-
-// const chalk = require('chalk');
-// const fs = require('fs');
-// const markdownLinkCheck = require('./');
-// const program = require('commander');
-// const request = require('request');
-// const url = require('url');
-// const path = require('path');
-
-// const statusLabels = {
-//     alive: chalk.green('✓'),
-//     dead: chalk.red('✖'),
-//     ignored: chalk.gray('/'),
-//     error: chalk.yellow('⚠'),
-// };
-
-// function runMarkdownLinkCheck(markdown, opts) {
-//     markdownLinkCheck(markdown, opts, function (err, results) {
-//         if (err) {
-//             console.error(chalk.red('\nERROR: something went wrong!'));
-//             console.error(err.stack);
-//             process.exit(1);
-//         }
-
-//         if (results.length === 0 && !opts.quiet) {
-//             console.log(chalk.yellow('No hyperlinks found!'));
-//         }
-//         results.forEach(function (result) {
-//             // Skip messages for non-deadlinks in quiet mode.
-//             if (opts.quiet && result.status !== 'dead') {
-//                 return;
-//             }
-
-//             if (opts.verbose) {
-//                 if (result.err) {
-//                     console.log('[%s] %s → Status: %s %s', statusLabels[result.status], result.link, result.statusCode, result.err);
-//                 } else {
-//                     console.log('[%s] %s → Status: %s', statusLabels[result.status], result.link, result.statusCode);
-//                 }
-//             }
-//             else {
-//                 console.log('[%s] %s', statusLabels[result.status], result.link);
-//             }
-//         });
-//         if (results.some((result) => result.status === 'dead')) {
-//             console.error(chalk.red('\nERROR: dead links found!'));
-//             process.exit(1);
-//         }
-//     });
-// }

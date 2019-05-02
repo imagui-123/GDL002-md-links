@@ -1,10 +1,12 @@
 const path = require('path');
 const fs = require('fs');
+const fetch = require('node-fetch');
+
 
 
 function validatePath(newPath){
     if(newPath != null){
-        console.log('Ingresaste una ruta');
+        // console.log('Ingresaste una ruta');
         return true;
     } else{
         console.log('Ingresa una ruta');
@@ -15,12 +17,16 @@ function validatePath(newPath){
 
 //   validar que tipo de ruta es
 function absoluteOrRelativePath(newPath) {
-    if (path.isAbsolute(newPath) === false)
-      return path.resolve(newPath);
-    if (path.isAbsolute(newPath) === true)
-      return newPath;
+   absolutePath=newPath;
+    if (path.isAbsolute(absolutePath) === false){
+      // console.log('convertir');
+      // console.log(absolutePath +  ' se convirtio en');
+      return path.resolve(absolutePath);
+     } if (path.isAbsolute(absolutePath) === true) {
+      // console.log('absoluito');
+      return absolutePath;
   }
-
+}
 //   Validar que sea un archivo '.md'
 function fileValidateMd(newPath) {
     if (newPath === undefined) {
@@ -31,7 +37,7 @@ function fileValidateMd(newPath) {
         console.log('No es un archivo .md');
         return false;
       } else {
-        console.log('Si es un archivo markdown');
+        // console.log('Si es un archivo markdown');
         return true;
       }
     }
@@ -61,4 +67,32 @@ function fileValidateMd(newPath) {
     });
   }
 
-  module.exports={ validatePath, fileOrDirectory, absoluteOrRelativePath, fileValidateMd}
+  function extractLinks(newPath) {
+ 
+    fs.readFile(newPath, 'utf-8', (err, data) => {
+      if (err) {
+        return console.log(err);
+      }
+      {
+        console.log('EXTRACTLINKS');
+        const toString = data.toString();
+        const mdLinkRgEx = /(?:[^[])([^[]*)(?=(\]+\(((https?:\/\/)|(http?:\/\/)|(www\.))))/g;
+        const mdLinkRgEx2 = /(((https?:\/\/)|(http?:\/\/)|(www\.))[^\s\n)]+)(?=\))/g;
+  
+        const allLinks = toString.match(mdLinkRgEx);
+        const urlArray = toString.match(mdLinkRgEx2);
+        console.log(`This links are founded in ${mdToRead}\n`);
+        if(urlArray!=null){
+          for (let i = 0; i < urlArray.length; i++) {
+            console.log(
+              `Text: ${allLinks[i]}\nLink: ${urlArray[i]}\nFile: ${newPath}\nResponse code: ${
+                response.status
+              }\nResponse: ${response.statusText}\n`,
+            );
+        }
+      }
+     } 
+    });
+   }
+
+  module.exports={ extractLinks, validatePath, fileOrDirectory, absoluteOrRelativePath, fileValidateMd}
