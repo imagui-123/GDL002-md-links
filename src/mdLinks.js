@@ -50,7 +50,7 @@ function readFileM(newPath) {
       return console.log(err);
     }
      {
-      console.log('------READ FILE M---------');
+      // console.log('------READ FILE M---------');
       const toString = data.toString();
       // extrae el texto del link
       const mdLinkRgEx = /(?:[^[])([^[]*)(?=(\]+\(((https?:\/\/)|(http?:\/\/)|(www\.))))/g;
@@ -65,7 +65,8 @@ function readFileM(newPath) {
         }
         if (process.argv[3] === '--validate') {
           //  validate.validateLinks(urlArray);
-          validateAllLinks(urlArray);
+           validateAllLinks(urlArray);
+          // validate.validateLinks(urlArray);
           return urlArray;
         } else if (process.argv[3] === '--stats') {
           //  stats.statsLinks(urlArray);

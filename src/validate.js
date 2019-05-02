@@ -13,7 +13,7 @@ function validateLinks (newPath, callback){
       // extrae el texto del link
       const mdLinkRgEx = /(?:[^[])([^[]*)(?=(\]+\(((https?:\/\/)|(http?:\/\/)|(www\.))))/g;
       const mdLinkRgEx2 = /(((https?:\/\/)|(http?:\/\/)|(www\.))[^\s\n)]+)(?=\))/g;
-      console.log('------READ FILE MD show validate---------');
+      // console.log('------READ FILE MD show validate---------');
       
       const text = toString.match(mdLinkRgEx);
       const urlArray = toString.match(mdLinkRgEx2);
