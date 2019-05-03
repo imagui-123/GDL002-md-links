@@ -1,11 +1,12 @@
-const validate = require('./validate');
-const stats = require('./stats');
-const functions = require('./functions');
+#!/usr/bin/env node
+
+const validate = require('./src/validate');
+const functions = require('./src/functions');
+const stats = require('./src/stats');
 let path = require('path');
 const fs = require('fs');
-const fetch = require('node-fetch');
-const chalk = require('chalk');
-
+const [, , ...args] = process.argv;
+let chalk = require('chalk');
 let newPath = process.argv[2];
 
 function mdLinks(newPath) {
@@ -15,17 +16,15 @@ function mdLinks(newPath) {
   functions.absoluteOrRelativePath(newPath);
   mdTrue = functions.fileValidateMd(newPath);
   if (mdTrue == true) {
-     readFileM(newPath);
-     return (`File name: ${newPath}\n`);
-   }
+    extractLinks(newPath);
+    return `File name: ${newPath}\n`;
+  }
 }
-
 
 function validateMd(newPath, callback) {
   let markdownArray = [];
-  let readFiles;
+  // let readFiles;
   readFiles = fs.readdir(newPath, (err, files) => {
-
     if (err) {
       console.log('Algo anda mal');
       return console.log(chalk.red('✖' + err));
@@ -34,22 +33,19 @@ function validateMd(newPath, callback) {
         if (path.extname(file) == '.md') {
           markdownArray.push(file);
         }
-      })
-    }   
+      });
+    }
     callback(markdownArray);
-  })
+  });
   // return readFiles;
 }
-
-//   Validar que sea un archivo '.md' functio
-let options = process.argv[3];
-function readFileM(newPath) {
- 
+//readFileM
+function extractLinks(newPath) {
   fs.readFile(newPath, 'utf-8', function(err, data) {
     if (err) {
       return console.log(chalk.red('\nERROR: ' + err));
     }
-     {
+    {
       const toString = data.toString();
       // extrae el texto del link
       const mdLinkRgEx = /(?:[^[])([^[]*)(?=(\]+\(((https?:\/\/)|(http?:\/\/)|(www\.))))/g;
@@ -63,9 +59,8 @@ function readFileM(newPath) {
           console.log(chalk.white(`Title: ${allLinks[i]}`));
           console.log(chalk.blue(`Link:${urlArray[i]}`));
           console.log(chalk.cyan(`fileFound: ${newPath}\n`));
-           
         }
-       
+
         if (process.argv[3] === '--validate') {
           validateAllLinks(urlArray);
           return urlArray;
@@ -79,7 +74,6 @@ function readFileM(newPath) {
           return urlArray;
         }
       }
-    
     }
   });
 }
@@ -119,35 +113,14 @@ function getStatsAndValidate() {
   });
 }
 
- console.log(mdLinks(newPath));
-
+//   console.log(mdLinks(newPath));
+mdLinks(newPath);
 module.exports = {
   mdLinks,
-  readFileM,
+  extractLinks,
+  validateMd,
   validateMd,
   validateAllLinks,
-  // validateLink,
   getStats,
   getStatsAndValidate,
-
 };
-
-// function readDirectory(newPath){
-//   fs.readdir(process.argv[2], function(err,data))
-//   let list= fs.readdir(newPath);
-//   console.log(newPath);
-//   list.forEach( (file) => {
-//      file= newPath + '/' + file;
-//      console.log(file)
-//      let stat= fs.statSync(file);
-//       if(stat && stat.isDirectory()){
-//         results=results.concat(walk(file));
-//       } else {
-//         result.push(file);
-//       }
-//   });
-//   console.log(results);
-//   return results;
-// }
-
-
