@@ -1,12 +1,13 @@
 const path = require('path');
 const fs = require('fs');
 const fetch = require('node-fetch');
+const chalk=require('chalk');
 
 //-------------------------- funcion para stats------------
 function statsLinks(newPath, needValidation=false){
     fs.readFile(newPath, 'utf-8', (err,data)=>{
       if(err){
-        return console.log(err);
+        return console.log(chalk.red('✖' + err));
       }
       {
         // console.log('Show the stats');
@@ -17,9 +18,10 @@ function statsLinks(newPath, needValidation=false){
         let uniqueUrl;
         
         console.log(`File name: ${newPath}`);
-        console.log('Total links: '+ ' ' + url.length);
-        uniqueUrl= url.filter((currentItem, itemIndex, currentArray) => currentArray.indexOf(currentItem)===itemIndex); // indexOf() retorna el primer índice en el que se puede encontrar un elemento dado en el array
-        console.log('Total unique Links: ' + " " + uniqueUrl.length + '\n');
+        console.log(chalk.green(' ✔ Total links: '+ ' ' + url.length));
+        uniqueUrl= url.filter((currentItem, itemIndex, currentArray) => currentArray.indexOf(currentItem)===itemIndex); 
+        // indexOf() retorna el primer índice en el que se puede encontrar un elemento dado en el array
+        console.log(chalk.green(' ✔ Total unique Links: ' + " " + uniqueUrl.length + '\n'));
         
         if(needValidation){
           validateStats(uniqueUrl, newPath);
@@ -49,7 +51,8 @@ function statsLinks(newPath, needValidation=false){
             }
             if (goodLinks+badLinks === uniqueUrl.length) {
               console.log(`File: ${newPath} has:`);
-              console.log(`Total Functional Links: ${goodLinks}\nTotal Broken links: ${badLinks}\n`);
+              console.log(chalk.green(`✔ Total Funcional Links: ${goodLinks}`));
+              console.log(chalk.red(`✖ Total Broken links: ${badLinks}\n`));
             }
           }
         ).catch(function (err){

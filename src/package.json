@@ -1,7 +1,7 @@
 {
   "name": "node-mdlink",
   "version": "1.0.0",
-  "description": "''\u001b[DExtrae los links de cualquier archivo'",
+  "description": "''Extrae los links de cualquier archivo'",
   "main": "index.js",
   "scripts": {
     "test": "'md-links\u001b[D\u001b[D\u001b[D\u001b[D\u001b[D\u001b[D\u001b[D\u001b[D\u001b[D\u001b[\u001b[C\u001b[C\u001b[C\u001b[C\u001b[C\u001b[C\u001b[C\u001b[C\u001b[C"
