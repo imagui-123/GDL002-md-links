@@ -5,10 +5,10 @@ const chalk = require('chalk');
 
 function validatePath(newPath) {
   if (newPath != null) {
-    console.log(chalk.green('✓ Ingresaste una ruta exitosamente'));
+    console.log(chalk.green('✓ You entered a route successfully'));
     return true;
   } else if (newPath === undefined) {
-    console.log(chalk.yellow('⚠ Ingresa una ruta o un directorio ejemplo: archivo.md'));
+    console.log(chalk.yellow('⚠ Enter a path or directory, example: archivo.md'));
     return false;
   }
 }
@@ -26,10 +26,9 @@ function absoluteOrRelativePath(newPath) {
 function fileValidateMd(newPath) {
   const pathExtencion = path.extname(newPath);
   if (pathExtencion != '.md') {
-    console.log(chalk.red('✖ Ingresa un archivo de tipo markdown(.md)'));
+    console.log(chalk.red('✖ Enter a type file (.md)'));
     return false;
   } else if ('.') {
-    // console.log('Si es un archivo markdown');
     return true;
   }
 }
@@ -39,7 +38,7 @@ function fileOrDirectory(directoryPath) {
     fs.access(directoryPath, fs.constants.F_OK | fs.constants.W_OK, err => {
       if (err) {
         console.error(
-          chalk.red(`✖ ${directoryPath} ${err.code === 'ENOENT' ? 'No existe' : 'is read-only'}`),
+          chalk.red(`✖ ${directoryPath} ${err.code === 'ENOENT' ? ' Does not exist' : 'it is read-only'}`),
         );
         reject(err);
         //  return false;
@@ -51,26 +50,5 @@ function fileOrDirectory(directoryPath) {
     });
   });
 }
-
-// function fileOrDirectory(absolutePath,arrayFile_){
-
-//   arrayFile_ = arrayFile_ || [];
-//   const expRegMarkdown = /.\.(m|M(?:d|D?markdown)?)|text$/g;
-//   const route = fs.statSync(absolutePath);
-
-//   if (route.isDirectory()) {
-//       const listFile = fs.readdirSync(absolutePath);
-//       listFile.forEach((file) => {
-//        const newPath = path.join(absolutePath, file);
-//       fileOrDirectory(newPath, arrayFile_);
-//       return true;
-//       });
-
-//   } else if (route.isFile() && expRegMarkdown.test(path.basename(absolutePath))) {
-//       // console.log(absolutePath + ' absoluteOath');
-//       arrayFile_.push(absolutePath);
-//   }
-//   return arrayFile_;
-// };
 
 module.exports = { validatePath, fileOrDirectory, absoluteOrRelativePath, fileValidateMd };

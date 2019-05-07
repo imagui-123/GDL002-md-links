@@ -4,6 +4,7 @@ const {
   fileValidateMd,
   validatePath,
 } = require('../src/functions');
+
 const nameDirectory = 'C:/Users/iagui/Documents/Lab_proyecto/GDL002-md-links/src';
 const nameFile = 'prueba2.md';
 
@@ -16,7 +17,7 @@ test('Should return false to validate path', () => {
 });
 
 test('Should by a relative path', () => {
-  expect(absoluteOrRelativePath('prueba2.md')).toBe(
+  expect(absoluteOrRelativePath(nameFile)).toBe(
     'C:\\Users\\iagui\\Documents\\Lab_proyecto\\GDL002-md-links\\prueba2.md',
   );
 });

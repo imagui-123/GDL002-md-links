@@ -11,10 +11,11 @@
     "jest": "^24.7.1"
   },
   "scripts": {
-    "test": "jest --coverage --colors"
+    "test": "jest --coverage"
   },
   "dependencies": {
     "chalk": "^2.4.2",
+    "chalk-animation": "^1.6.0",
     "markdown": "^0.5.0",
     "markdown-it": "^8.4.2",
     "marked": "^0.6.2",

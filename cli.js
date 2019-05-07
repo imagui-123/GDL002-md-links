@@ -1,20 +1,22 @@
 #!/usr/bin/env node
-
+// 'use strict';
+const chalk = require('chalk');
 const validate = require('./src/validate');
 const functions = require('./src/functions');
 const stats = require('./src/stats');
 let path = require('path');
 const fs = require('fs');
 const [, , ...args] = process.argv;
-let chalk = require('chalk');
 let newPath = process.argv[2];
+
+
 
 function mdLinks(newPath) {
   if (newPath === undefined) {
     return console.log(chalk.red('✖ Ingresa una ruta o un directorio'));
   }
   functions.absoluteOrRelativePath(newPath);
-  mdTrue = functions.fileValidateMd(newPath);
+ let  mdTrue = functions.fileValidateMd(newPath);
   if (mdTrue == true) {
     extractLinks(newPath);
     return `File name: ${newPath}\n`;
@@ -56,9 +58,9 @@ function extractLinks(newPath) {
       // console.log(`File name: ${newPath}\n`);
       if (urlArray != null) {
         for (let i = 0; i < urlArray.length; i++) {
-          console.log(chalk.white(`Title: ${allLinks[i]}`));
+          console.log(`Title: ${allLinks[i]}`);
           console.log(chalk.blue(`Link:${urlArray[i]}`));
-          console.log(chalk.cyan(`fileFound: ${newPath}\n`));
+          console.log(chalk.cyan(`FileFound: ${newPath}\n`));
         }
 
         if (process.argv[3] === '--validate') {

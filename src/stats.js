@@ -35,9 +35,7 @@ function statsLinks(newPath, needValidation = false) {
 function validateStats(uniqueUrl, newPath) {
   let badLinks = 0;
   let goodLinks = 0;
-  // console.log('VALIDATE and STATS');
   for (let i = 0; i < uniqueUrl.length; i++) {
-    // console.log('Este es el valor de uniqueURL '+ uniqueUrl );
     fetch(uniqueUrl[i])
       .then(response => {
         if (response.status == 404 || response.status == 400) {
